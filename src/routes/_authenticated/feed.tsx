@@ -7,7 +7,7 @@ import { Camera, Users, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
 });
 
