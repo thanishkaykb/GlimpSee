@@ -19,8 +19,8 @@ function Landing() {
       {/* Nav */}
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <img src={logo} alt="Gimpsee" width={36} height={36} className="rounded-xl shadow-glow" />
-          <span className="font-display text-2xl font-bold">Gimpsee</span>
+          <img src={logo} alt="GlimpSee" width={36} height={36} className="rounded-xl shadow-glow" />
+          <span className="font-display text-2xl font-bold">GlimpSee</span>
         </div>
         <Link
           to={authed ? "/feed" : "/auth"}
@@ -50,7 +50,7 @@ function Landing() {
             to={authed ? "/feed" : "/auth"}
             className="group inline-flex items-center gap-2 rounded-full bg-sunset px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-glow transition hover:scale-[1.02]"
           >
-            {authed ? "Open Gimpsee" : "Get started"}
+            {authed ? "Open GlimpSee" : "Get started"}
             <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
           </Link>
           <a href="#how" className="rounded-full border border-border bg-card-soft px-7 py-3.5 text-base font-medium hover:border-primary/40">

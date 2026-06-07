@@ -37,7 +37,7 @@ function AuthedLayout() {
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
           <Link to="/feed" className="flex items-center gap-2">
             <img src={logo} alt="" width={32} height={32} className="rounded-lg shadow-glow" />
-            <span className="font-display text-xl font-bold">Gimpsee</span>
+            <span className="font-display text-xl font-bold">GlimpSee</span>
           </Link>
           <button onClick={signOut} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border hover:border-primary/50">
             <LogOut className="h-4 w-4" />
