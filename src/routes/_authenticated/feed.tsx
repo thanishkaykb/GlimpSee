@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCircles, signedPhotoUrl } from "@/hooks/use-circles";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, Users, Plus, Loader2 } from "lucide-react";
+import { Camera, Users, Plus, Loader2, Download, Trash2, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
