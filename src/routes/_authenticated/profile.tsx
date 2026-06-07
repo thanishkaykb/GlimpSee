@@ -78,6 +78,78 @@ function ProfilePage() {
         </button>
       </div>
 
+      <div className="space-y-4 rounded-3xl border border-border bg-card-soft p-5 shadow-soft">
+        <div className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-primary" /><h2 className="font-display text-lg font-semibold">Security</h2></div>
+
+        {email && (
+          <button
+            onClick={async () => {
+              setBusy(true);
+              const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth` });
+              setBusy(false);
+              if (error) return toast.error(error.message);
+              toast.success("Reset link sent to " + email);
+            }}
+            disabled={busy}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-secondary px-4 py-3 text-sm font-semibold disabled:opacity-60">
+            <Mail className="h-4 w-4" /> Email me a password reset link
+          </button>
+        )}
+
+        <div className="space-y-2 rounded-2xl border border-border bg-background/40 p-3">
+          <p className="text-xs text-muted-foreground">Reset via phone OTP</p>
+          {!otpSent ? (
+            <div className="flex gap-2">
+              <input value={otpPhone} onChange={(e) => setOtpPhone(e.target.value)} placeholder="+15551234567"
+                className="flex-1 rounded-xl border border-border bg-input px-3 py-2 text-sm outline-none focus:border-primary" />
+              <button
+                onClick={async () => {
+                  if (!otpPhone.startsWith("+")) return toast.error("Use international format e.g. +15551234567");
+                  setBusy(true);
+                  const { error } = await supabase.auth.signInWithOtp({ phone: otpPhone });
+                  setBusy(false);
+                  if (error) return toast.error(error.message);
+                  setOtpSent(true);
+                  toast.success("Code sent");
+                }}
+                disabled={busy}
+                className="rounded-xl bg-sunset px-3 py-2 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-60">
+                <Phone className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <input value={otpCode} onChange={(e) => setOtpCode(e.target.value)} maxLength={6} placeholder="6-digit code"
+                className="w-full rounded-xl border border-border bg-input px-3 py-2 text-center tracking-[0.4em] outline-none focus:border-primary" />
+              <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" placeholder="New password (min 6 chars)"
+                className="w-full rounded-xl border border-border bg-input px-3 py-2 text-sm outline-none focus:border-primary" />
+              <button
+                onClick={async () => {
+                  if (newPassword.length < 6) return toast.error("Password too short");
+                  setBusy(true);
+                  const v = await supabase.auth.verifyOtp({ phone: otpPhone, token: otpCode, type: "sms" });
+                  if (v.error) { setBusy(false); return toast.error(v.error.message); }
+                  const { error } = await supabase.auth.updateUser({ password: newPassword });
+                  setBusy(false);
+                  if (error) return toast.error(error.message);
+                  toast.success("Password updated");
+                  setOtpSent(false); setOtpCode(""); setNewPassword("");
+                }}
+                disabled={busy}
+                className="w-full rounded-xl bg-sunset px-3 py-2 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-60">
+                Verify & set new password
+              </button>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); }}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 px-4 py-3 text-sm font-semibold text-destructive">
+          <LogOut className="h-4 w-4" /> Sign out
+        </button>
+      </div>
+
       <p className="px-2 text-center text-[11px] leading-relaxed text-muted-foreground">
         Your photos are stored privately and only shared with people you've invited to your circles.
       </p>
