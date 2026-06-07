@@ -90,8 +90,8 @@ function AuthPage() {
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <img src={logo} alt="Gimpsee" width={72} height={72} className="mx-auto rounded-2xl shadow-glow" />
-          <h1 className="mt-5 font-display text-4xl font-bold">Welcome to <span className="text-gradient-sunset">Gimpsee</span></h1>
+          <img src={logo} alt="GlimpSee" width={72} height={72} className="mx-auto rounded-2xl shadow-glow" />
+          <h1 className="mt-5 font-display text-4xl font-bold">Welcome to <span className="text-gradient-sunset">GlimpSee</span></h1>
           <p className="mt-2 text-sm text-muted-foreground">Sign in to share moments with your circle.</p>
         </div>
 

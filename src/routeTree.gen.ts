@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedMemoriesRouteImport } from './routes/_authenticated/memories'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedCirclesRouteImport } from './routes/_authenticated/circles'
 import { Route as AuthenticatedCaptureRouteImport } from './routes/_authenticated/capture'
@@ -34,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMemoriesRoute = AuthenticatedMemoriesRouteImport.update({
+  id: '/memories',
+  path: '/memories',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/capture': typeof AuthenticatedCaptureRoute
   '/circles': typeof AuthenticatedCirclesRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/memories': typeof AuthenticatedMemoriesRoute
   '/profile': typeof AuthenticatedProfileRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/capture': typeof AuthenticatedCaptureRoute
   '/circles': typeof AuthenticatedCirclesRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/memories': typeof AuthenticatedMemoriesRoute
   '/profile': typeof AuthenticatedProfileRoute
 }
 export interface FileRoutesById {
@@ -76,13 +84,28 @@ export interface FileRoutesById {
   '/_authenticated/capture': typeof AuthenticatedCaptureRoute
   '/_authenticated/circles': typeof AuthenticatedCirclesRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
+  '/_authenticated/memories': typeof AuthenticatedMemoriesRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/capture' | '/circles' | '/feed' | '/profile'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/capture'
+    | '/circles'
+    | '/feed'
+    | '/memories'
+    | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/capture' | '/circles' | '/feed' | '/profile'
+  to:
+    | '/'
+    | '/auth'
+    | '/capture'
+    | '/circles'
+    | '/feed'
+    | '/memories'
+    | '/profile'
   id:
     | '__root__'
     | '/'
@@ -91,6 +114,7 @@ export interface FileRouteTypes {
     | '/_authenticated/capture'
     | '/_authenticated/circles'
     | '/_authenticated/feed'
+    | '/_authenticated/memories'
     | '/_authenticated/profile'
   fileRoutesById: FileRoutesById
 }
@@ -130,6 +154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/memories': {
+      id: '/_authenticated/memories'
+      path: '/memories'
+      fullPath: '/memories'
+      preLoaderRoute: typeof AuthenticatedMemoriesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/feed': {
       id: '/_authenticated/feed'
       path: '/feed'
@@ -158,6 +189,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCaptureRoute: typeof AuthenticatedCaptureRoute
   AuthenticatedCirclesRoute: typeof AuthenticatedCirclesRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
+  AuthenticatedMemoriesRoute: typeof AuthenticatedMemoriesRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
 }
 
@@ -165,6 +197,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCaptureRoute: AuthenticatedCaptureRoute,
   AuthenticatedCirclesRoute: AuthenticatedCirclesRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
+  AuthenticatedMemoriesRoute: AuthenticatedMemoriesRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
 }
 
@@ -179,13 +212,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

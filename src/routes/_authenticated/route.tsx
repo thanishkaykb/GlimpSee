@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Camera, Home, Users, User as UserIcon, LogOut } from "lucide-react";
+import { Camera, Home, Users, User as UserIcon, LogOut, Calendar } from "lucide-react";
 import logo from "@/assets/gimpsee-logo.png";
 import { toast } from "sonner";
 
@@ -24,9 +24,10 @@ function AuthedLayout() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const tabs: { to: "/feed" | "/capture" | "/circles" | "/profile"; icon: typeof Home; label: string }[] = [
+  const tabs: { to: "/feed" | "/capture" | "/memories" | "/circles" | "/profile"; icon: typeof Home; label: string }[] = [
     { to: "/feed", icon: Home, label: "Feed" },
     { to: "/capture", icon: Camera, label: "Capture" },
+    { to: "/memories", icon: Calendar, label: "Memories" },
     { to: "/circles", icon: Users, label: "Circles" },
     { to: "/profile", icon: UserIcon, label: "Profile" },
   ];
@@ -37,7 +38,7 @@ function AuthedLayout() {
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
           <Link to="/feed" className="flex items-center gap-2">
             <img src={logo} alt="" width={32} height={32} className="rounded-lg shadow-glow" />
-            <span className="font-display text-xl font-bold">Gimpsee</span>
+            <span className="font-display text-xl font-bold">GlimpSee</span>
           </Link>
           <button onClick={signOut} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border hover:border-primary/50">
             <LogOut className="h-4 w-4" />
