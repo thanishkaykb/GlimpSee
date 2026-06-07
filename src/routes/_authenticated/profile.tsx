@@ -9,12 +9,18 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function ProfilePage() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [otpPhone, setOtpPhone] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     (async () => {
