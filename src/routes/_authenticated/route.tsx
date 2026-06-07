@@ -24,9 +24,10 @@ function AuthedLayout() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const tabs: { to: "/feed" | "/capture" | "/circles" | "/profile"; icon: typeof Home; label: string }[] = [
+  const tabs: { to: "/feed" | "/capture" | "/memories" | "/circles" | "/profile"; icon: typeof Home; label: string }[] = [
     { to: "/feed", icon: Home, label: "Feed" },
     { to: "/capture", icon: Camera, label: "Capture" },
+    { to: "/memories", icon: Calendar, label: "Memories" },
     { to: "/circles", icon: Users, label: "Circles" },
     { to: "/profile", icon: UserIcon, label: "Profile" },
   ];
