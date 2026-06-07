@@ -164,6 +164,31 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
 
   const name = post.profiles?.display_name ?? "Someone";
   const initial = name.charAt(0).toUpperCase();
+  const mine = me === post.author_id;
+
+  async function download() {
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `glimpsee-${new Date(post.created_at).getTime()}.jpg`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch { toast.error("Download failed"); }
+  }
+
+  async function del() {
+    if (!confirm("Delete this moment forever?")) return;
+    try {
+      await supabase.storage.from("photos").remove([post.storage_path]);
+      const { error } = await supabase.from("posts").delete().eq("id", post.id);
+      if (error) throw error;
+      toast.success("Deleted");
+      qc.invalidateQueries({ queryKey: ["posts", post.circle_id] });
+    } catch (e: any) { toast.error(e.message ?? "Failed to delete"); }
+  }
 
   return (
     <article className="overflow-hidden rounded-3xl border border-border bg-card-soft shadow-soft animate-float-in" style={{ animationDelay: `${delay}ms` }}>
@@ -176,6 +201,16 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
             <p className="text-sm font-semibold">{name}</p>
             <p className="text-[11px] text-muted-foreground">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</p>
           </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={download} title="Download" className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/50">
+            <Download className="h-4 w-4" />
+          </button>
+          {mine && (
+            <button onClick={del} title="Delete" className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-destructive hover:border-destructive">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </header>
 
