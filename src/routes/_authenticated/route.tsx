@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Camera, Home, Users, User as UserIcon, LogOut } from "lucide-react";
+import { Camera, Home, Users, User as UserIcon, LogOut, Calendar } from "lucide-react";
 import logo from "@/assets/gimpsee-logo.png";
 import { toast } from "sonner";
 
