@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Camera, Home, Users, User as UserIcon, LogOut, Calendar } from "lucide-react";
+import { Camera, Home, Users, User as UserIcon, LogOut, Calendar, Sparkles, Loader2 } from "lucide-react";
 import logo from "@/assets/gimpsee-logo.png";
 import { toast } from "sonner";
 
@@ -34,6 +35,7 @@ function AuthedLayout() {
 
   return (
     <div className="min-h-screen pb-28">
+      <NameGate />
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
           <Link to="/feed" className="flex items-center gap-2">
@@ -63,6 +65,62 @@ function AuthedLayout() {
           })}
         </div>
       </nav>
+    </div>
+  );
+}
+
+function NameGate() {
+  const [needs, setNeeds] = useState(false);
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [uid, setUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return;
+      setUid(u.user.id);
+      // Ensure profile row exists (in case trigger missed an existing user)
+      await supabase.from("profiles").upsert({ id: u.user.id }, { onConflict: "id" });
+      const { data } = await supabase.from("profiles").select("display_name").eq("id", u.user.id).maybeSingle();
+      if (!data?.display_name) setNeeds(true);
+    })();
+  }, []);
+
+  async function save() {
+    const n = name.trim();
+    if (n.length < 2) return toast.error("Please enter your name");
+    if (!uid) return;
+    setSaving(true);
+    const { error } = await supabase.from("profiles")
+      .update({ display_name: n, updated_at: new Date().toISOString() })
+      .eq("id", uid);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Welcome, ${n}!`);
+    setNeeds(false);
+  }
+
+  if (!needs) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md p-4">
+      <div className="w-full max-w-sm rounded-3xl border border-border bg-card-soft p-6 shadow-glow animate-float-in">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-sunset shadow-glow">
+          <Sparkles className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <h2 className="text-center font-display text-2xl font-bold">What should we call you?</h2>
+        <p className="mt-1 text-center text-sm text-muted-foreground">This is how friends will see you on GlimpSee.</p>
+        <input
+          autoFocus value={name} onChange={(e) => setName(e.target.value)} maxLength={40}
+          placeholder="Your name"
+          onKeyDown={(e) => e.key === "Enter" && save()}
+          className="mt-5 w-full rounded-2xl border border-border bg-input px-4 py-3 text-base outline-none focus:border-primary" />
+        <button onClick={save} disabled={saving}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-sunset px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Continue
+        </button>
+        <p className="mt-3 text-center text-[11px] text-muted-foreground">You can change this anytime in your profile.</p>
+      </div>
     </div>
   );
 }
