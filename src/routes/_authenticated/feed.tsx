@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCircles, signedPhotoUrl } from "@/hooks/use-circles";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, Users, Plus, Loader2, Download, Trash2, MoreVertical } from "lucide-react";
+import { Camera, Users, Plus, Loader2, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -20,7 +20,8 @@ type Post = {
   storage_path: string;
   caption: string | null;
   created_at: string;
-  profiles?: { display_name: string | null; avatar_url: string | null } | null;
+  media_type?: string | null;
+  profiles?: { display_name: string | null; username: string | null; avatar_url: string | null } | null;
   reactions?: { id: string; emoji: string; user_id: string }[];
 };
 
@@ -41,18 +42,11 @@ function FeedPage() {
     queryFn: async (): Promise<Post[]> => {
       const { data, error } = await supabase
         .from("posts")
-        .select("id, circle_id, author_id, storage_path, caption, created_at, profiles:profiles!posts_author_id_fkey(display_name, avatar_url), reactions(id, emoji, user_id)")
+        .select("id, circle_id, author_id, storage_path, caption, created_at, media_type, profiles(display_name, username, avatar_url), reactions(id, emoji, user_id)")
         .eq("circle_id", activeCircle!)
         .order("created_at", { ascending: false })
         .limit(50);
-      if (error) {
-        // fallback without profile join (in case fk name differs)
-        const { data: d2, error: e2 } = await supabase
-          .from("posts").select("id, circle_id, author_id, storage_path, caption, created_at, reactions(id, emoji, user_id)")
-          .eq("circle_id", activeCircle!).order("created_at", { ascending: false }).limit(50);
-        if (e2) throw e2;
-        return (d2 ?? []) as any;
-      }
+      if (error) throw error;
       return (data ?? []) as any;
     },
   });
@@ -162,7 +156,8 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
     qc.invalidateQueries({ queryKey: ["posts", post.circle_id] });
   }
 
-  const name = post.profiles?.display_name ?? "Someone";
+  const isVideo = (post.media_type === "video") || /\.(mp4|webm|mov)$/i.test(post.storage_path);
+  const name = post.profiles?.display_name || post.profiles?.username || "Friend";
   const initial = name.charAt(0).toUpperCase();
   const mine = me === post.author_id;
 
@@ -173,7 +168,8 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
       const blob = await res.blob();
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `glimpsee-${new Date(post.created_at).getTime()}.jpg`;
+      const ext = isVideo ? "mp4" : "jpg";
+      a.download = `glimpsee-${new Date(post.created_at).getTime()}.${ext}`;
       a.click();
       URL.revokeObjectURL(a.href);
     } catch { toast.error("Download failed"); }
@@ -216,7 +212,11 @@ function PostCard({ post, delay }: { post: Post; delay: number }) {
 
       <div className="relative aspect-square bg-muted">
         {url ? (
-          <img src={url} alt={post.caption ?? "Moment"} loading="lazy" className="h-full w-full object-cover" />
+          isVideo ? (
+            <video src={url} controls playsInline className="h-full w-full object-cover" />
+          ) : (
+            <img src={url} alt={post.caption ?? "Moment"} loading="lazy" className="h-full w-full object-cover" />
+          )
         ) : (
           <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         )}
