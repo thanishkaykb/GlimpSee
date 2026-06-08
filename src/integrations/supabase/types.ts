@@ -74,6 +74,7 @@ export type Database = {
           circle_id: string
           created_at: string
           id: string
+          media_type: string
           storage_path: string
         }
         Insert: {
@@ -82,6 +83,7 @@ export type Database = {
           circle_id: string
           created_at?: string
           id?: string
+          media_type?: string
           storage_path: string
         }
         Update: {
@@ -90,9 +92,17 @@ export type Database = {
           circle_id?: string
           created_at?: string
           id?: string
+          media_type?: string
           storage_path?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "posts_circle_id_fkey"
             columns: ["circle_id"]
