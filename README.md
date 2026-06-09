@@ -261,30 +261,6 @@ Instead of chasing likes, followers, and engagement metrics, GlimpSee encourages
 
 ---
 
-## 📸 Screenshots
-
-### Landing Page
-
-
-
-### Feed
-
-
-
-### Capture
-
-
-
-### Circles
-
-
-
-### Memories
-
-
-
----
-
 ## 👨‍💻 Author
 
 ### Thanishka Yogesh
