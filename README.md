@@ -194,12 +194,16 @@ bun install
 
 ### Configure Environment Variables
 
-Create a `.env` file:
+Create a local `.env` file for development only. Do not commit it.
 
 ```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPABASE_URL=your_backend_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+SUPABASE_URL=your_backend_url
+SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 ```
+
+For Vercel, add the same variables in **Project Settings → Environment Variables**. The production build emits Vercel Build Output API files under `.vercel/output`, including the server function required to serve `/`.
 
 ### Run Development Server
 

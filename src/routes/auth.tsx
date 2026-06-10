@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
-import { Mail, Phone, ArrowLeft, Loader2 } from "lucide-react";
+import { Mail, Phone, ArrowLeft, Loader2, KeyRound } from "lucide-react";
 import logo from "@/assets/gimpsee-logo.png";
 
 export const Route = createFileRoute("/auth")({
@@ -126,6 +126,25 @@ function AuthPage() {
               <p className="pt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
                 We'll send a one-time code to verify it's really you.
               </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  const target = window.prompt("Enter your account email for a reset link");
+                  if (!target) return;
+                  if (!target.includes("@")) return toast.error("Enter a valid email");
+                  setLoading(true);
+                  const { error } = await supabase.auth.resetPasswordForEmail(target, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  setLoading(false);
+                  if (error) return toast.error(error.message);
+                  toast.success("Password reset link sent");
+                }}
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 pt-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-60"
+              >
+                <KeyRound className="h-3.5 w-3.5" /> Forgot password?
+              </button>
             </div>
           )}
 
