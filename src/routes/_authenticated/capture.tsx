@@ -164,7 +164,7 @@ function CapturePage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-3xl font-bold">Capture <span className="text-gradient-sunset">a moment</span></h1>
+      <h1 className="font-display text-2xl font-bold sm:text-3xl">Capture <span className="text-gradient-sunset">a moment</span></h1>
 
       <div className="relative aspect-square overflow-hidden rounded-3xl border border-border bg-black shadow-soft">
         {preview ? (
@@ -190,7 +190,7 @@ function CapturePage() {
       </div>
 
       {!preview ? (
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-3 sm:gap-4">
           <button onClick={() => fileRef.current?.click()} title="Upload"
             className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card-soft">
             <Upload className="h-5 w-5" />
