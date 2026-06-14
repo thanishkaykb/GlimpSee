@@ -3,21 +3,21 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
-import { Mail, Phone, ArrowLeft, Loader2, KeyRound } from "lucide-react";
+import { Mail, ArrowLeft, Loader2, KeyRound } from "lucide-react";
 import logo from "@/assets/gimpsee-logo.png";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Mode = "choose" | "email" | "phone" | "verify-email" | "verify-phone";
+type Mode = "choose" | "signin" | "signup";
 
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("choose");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,52 +26,46 @@ function AuthPage() {
     });
   }, [navigate]);
 
-  async function sendEmailOtp() {
+  async function signIn(e: React.FormEvent) {
+    e.preventDefault();
     if (!email.includes("@")) return toast.error("Enter a valid email");
+    if (!password) return toast.error("Enter your password");
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      if (error.message.toLowerCase().includes("not confirmed") || error.message.toLowerCase().includes("confirm")) {
+        return toast.error("Please verify your email first. Check your inbox for the verification link.");
+      }
+      return toast.error(error.message);
+    }
+    toast.success("Welcome back!");
+    navigate({ to: "/feed", replace: true });
+  }
+
+  async function signUp(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return toast.error("Enter your name");
+    if (!email.includes("@")) return toast.error("Enter a valid email");
+    if (password.length < 6) return toast.error("Password must be at least 6 characters");
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/feed` },
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/feed`,
+        data: { display_name: name.trim(), full_name: name.trim() },
+      },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Check your email for a 6-digit code");
-    setMode("verify-email");
-  }
-
-  async function verifyEmail() {
-    if (code.length < 6) return toast.error("Enter the 6-digit code");
-    setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Welcome!");
-    navigate({ to: "/feed", replace: true });
-  }
-
-  async function sendPhoneOtp() {
-    if (!phone.startsWith("+") || phone.length < 8) return toast.error("Use international format e.g. +14155550100");
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone });
-    setLoading(false);
-    if (error) {
-      if (error.message.toLowerCase().includes("sms") || error.message.toLowerCase().includes("provider")) {
-        toast.error("Phone sign-in needs an SMS provider configured. Try email for now.");
-      } else toast.error(error.message);
-      return;
+    if (data.session) {
+      toast.success("Account created!");
+      navigate({ to: "/feed", replace: true });
+    } else {
+      toast.success("Verification link sent! Check your email and click the link to activate your account.");
+      setMode("signin");
     }
-    toast.success("Code sent via SMS");
-    setMode("verify-phone");
-  }
-
-  async function verifyPhone() {
-    if (code.length < 6) return toast.error("Enter the 6-digit code");
-    setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({ phone, token: code, type: "sms" });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Welcome!");
-    navigate({ to: "/feed", replace: true });
   }
 
   async function googleSignIn() {
@@ -86,6 +80,19 @@ function AuthPage() {
     navigate({ to: "/feed", replace: true });
   }
 
+  async function forgotPassword() {
+    const target = window.prompt("Enter your account email for a reset link");
+    if (!target) return;
+    if (!target.includes("@")) return toast.error("Enter a valid email");
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(target, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Password reset link sent");
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
@@ -97,7 +104,7 @@ function AuthPage() {
 
         <div className="rounded-3xl border border-border bg-card-soft p-6 shadow-soft animate-float-in">
           {mode !== "choose" && (
-            <button onClick={() => { setMode("choose"); setCode(""); }} className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setMode("choose"); setPassword(""); }} className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-3 w-3" /> Back
             </button>
           )}
@@ -112,79 +119,81 @@ function AuthPage() {
                 <GoogleIcon /> Continue with Google
               </button>
               <button
-                onClick={() => setMode("email")}
+                onClick={() => setMode("signin")}
                 className="flex w-full items-center justify-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3 text-sm font-medium hover:border-primary/50"
               >
-                <Mail className="h-4 w-4" /> Continue with email
+                <Mail className="h-4 w-4" /> Sign in with email
               </button>
               <button
-                onClick={() => setMode("phone")}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3 text-sm font-medium hover:border-primary/50"
+                onClick={() => setMode("signup")}
+                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-sunset px-4 py-3 text-sm font-semibold text-primary-foreground shadow-glow hover:scale-[1.01] transition"
               >
-                <Phone className="h-4 w-4" /> Continue with phone
+                Create an account
               </button>
-              <p className="pt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
-                We'll send a one-time code to verify it's really you.
-              </p>
               <button
                 type="button"
-                onClick={async () => {
-                  const target = window.prompt("Enter your account email for a reset link");
-                  if (!target) return;
-                  if (!target.includes("@")) return toast.error("Enter a valid email");
-                  setLoading(true);
-                  const { error } = await supabase.auth.resetPasswordForEmail(target, {
-                    redirectTo: `${window.location.origin}/reset-password`,
-                  });
-                  setLoading(false);
-                  if (error) return toast.error(error.message);
-                  toast.success("Password reset link sent");
-                }}
+                onClick={forgotPassword}
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-2 pt-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 pt-2 text-xs text-muted-foreground hover:text-foreground disabled:opacity-60"
               >
                 <KeyRound className="h-3.5 w-3.5" /> Forgot password?
               </button>
             </div>
           )}
 
-          {mode === "email" && (
-            <form onSubmit={(e) => { e.preventDefault(); sendEmailOtp(); }} className="space-y-4">
-              <label className="block text-xs uppercase tracking-widest text-muted-foreground">Email</label>
-              <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-2xl border border-border bg-input px-4 py-3 text-base outline-none focus:border-primary" />
-              <SubmitBtn loading={loading}>Send code</SubmitBtn>
-            </form>
-          )}
-
-          {mode === "phone" && (
-            <form onSubmit={(e) => { e.preventDefault(); sendPhoneOtp(); }} className="space-y-4">
-              <label className="block text-xs uppercase tracking-widest text-muted-foreground">Phone</label>
-              <input type="tel" autoFocus value={phone} onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 415 555 0100"
-                className="w-full rounded-2xl border border-border bg-input px-4 py-3 text-base outline-none focus:border-primary" />
-              <p className="text-[11px] text-muted-foreground">Use international format with country code.</p>
-              <SubmitBtn loading={loading}>Send SMS code</SubmitBtn>
-            </form>
-          )}
-
-          {(mode === "verify-email" || mode === "verify-phone") && (
-            <form onSubmit={(e) => { e.preventDefault(); mode === "verify-email" ? verifyEmail() : verifyPhone(); }} className="space-y-4">
-              <label className="block text-xs uppercase tracking-widest text-muted-foreground">6-digit code</label>
-              <input inputMode="numeric" autoFocus value={code} maxLength={6}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                placeholder="123456"
-                className="w-full rounded-2xl border border-border bg-input px-4 py-3 text-center text-2xl tracking-[0.5em] outline-none focus:border-primary" />
-              <SubmitBtn loading={loading}>Verify & continue</SubmitBtn>
-              <button type="button" onClick={() => mode === "verify-email" ? sendEmailOtp() : sendPhoneOtp()}
+          {mode === "signin" && (
+            <form onSubmit={signIn} className="space-y-4">
+              <h2 className="text-lg font-semibold">Sign in</h2>
+              <Field label="Email">
+                <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com" className={inputCls} />
+              </Field>
+              <Field label="Password">
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••" className={inputCls} />
+              </Field>
+              <SubmitBtn loading={loading}>Sign in</SubmitBtn>
+              <button type="button" onClick={forgotPassword}
                 className="w-full text-xs text-muted-foreground hover:text-foreground">
-                Resend code
+                Forgot password?
               </button>
+            </form>
+          )}
+
+          {mode === "signup" && (
+            <form onSubmit={signUp} className="space-y-4">
+              <h2 className="text-lg font-semibold">Create account</h2>
+              <Field label="Name">
+                <input type="text" autoFocus value={name} onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name" className={inputCls} />
+              </Field>
+              <Field label="Email">
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com" className={inputCls} />
+              </Field>
+              <Field label="Password">
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 6 characters" className={inputCls} />
+              </Field>
+              <SubmitBtn loading={loading}>Create account</SubmitBtn>
+              <p className="text-[11px] leading-relaxed text-muted-foreground text-center">
+                We'll email you a verification link. Click it to activate your account, then sign in.
+              </p>
             </form>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+const inputCls = "w-full rounded-2xl border border-border bg-input px-4 py-3 text-base outline-none focus:border-primary";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs uppercase tracking-widest text-muted-foreground">{label}</label>
+      {children}
     </div>
   );
 }
