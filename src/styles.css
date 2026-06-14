@@ -98,6 +98,7 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body, #root { height: 100%; }
+  html, body { overflow-x: hidden; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -108,6 +109,7 @@
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
   }
+  input, textarea, select { font-size: 16px; } /* prevents iOS zoom on focus */
   .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
 }
 
