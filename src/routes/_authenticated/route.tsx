@@ -34,31 +34,35 @@ function AuthedLayout() {
   ];
 
   return (
-    <div className="min-h-screen pb-28">
+    <div className="min-h-screen pb-[7.5rem]" style={{ paddingBottom: "calc(7.5rem + env(safe-area-inset-bottom))" }}>
       <NameGate />
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
-          <Link to="/feed" className="flex items-center gap-2">
-            <img src={logo} alt="" width={32} height={32} className="rounded-lg shadow-glow" />
-            <span className="font-display text-xl font-bold">GlimpSee</span>
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3 sm:px-5">
+          <Link to="/feed" className="flex min-w-0 items-center gap-2">
+            <img src={logo} alt="" width={32} height={32} className="shrink-0 rounded-lg shadow-glow" />
+            <span className="truncate font-display text-xl font-bold">GlimpSee</span>
           </Link>
-          <button onClick={signOut} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border hover:border-primary/50">
+          <button onClick={signOut} aria-label="Sign out" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border hover:border-primary/50">
             <LogOut className="h-4 w-4" />
           </button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-5 py-6">
+      <main className="mx-auto max-w-2xl px-4 py-6 sm:px-5">
         <Outlet />
       </main>
 
-      <nav className="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-full border border-border bg-card-soft px-2 py-2 shadow-glow">
-        <div className="flex items-center gap-1">
+      <nav
+        className="fixed bottom-3 left-1/2 z-30 -translate-x-1/2 rounded-full border border-border bg-card-soft px-1.5 py-1.5 shadow-glow sm:bottom-4 sm:px-2 sm:py-2"
+        style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
+        <div className="flex items-center gap-0.5 sm:gap-1">
           {tabs.map((t) => {
             const active = loc.pathname === t.to || (t.to === "/feed" && loc.pathname === "/");
             return (
-              <Link key={t.to} to={t.to} className={`flex h-12 items-center gap-2 rounded-full px-4 text-sm font-medium transition ${active ? "bg-sunset text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"}`}>
-                <t.icon className="h-4 w-4" />
+              <Link key={t.to} to={t.to} aria-label={t.label}
+                className={`flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium transition sm:h-12 sm:px-4 ${active ? "bg-sunset text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"}`}>
+                <t.icon className="h-4 w-4 shrink-0" />
                 <span className="hidden sm:inline">{t.label}</span>
               </Link>
             );
